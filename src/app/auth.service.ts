@@ -1,52 +1,126 @@
-// src/app/auth.service.ts
-
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { delay, tap } from 'rxjs/operators';
+import { delay, tap, map } from 'rxjs/operators';
+
+// Define the possible user roles
+export type UserRole = 'admin' | 'student' | null;
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  // BehaviorSubject holds the current login status, emits to subscribers
-  private loggedIn = new BehaviorSubject<boolean>(this.hasToken());
+  // BehaviorSubjects to hold the current login state, user role, and registration number
+  private loggedIn = new BehaviorSubject<boolean>(false);
+  private userRole = new BehaviorSubject<UserRole>(null);
+  private currentUserRegNo = new BehaviorSubject<string | null>(null);
 
-  // Expose login status as an Observable
-  isLoggedIn$: Observable<boolean> = this.loggedIn.asObservable();
+  // Public observables that components can subscribe to
+  public isLoggedIn$: Observable<boolean> = this.loggedIn.asObservable();
+  public userRole$: Observable<UserRole> = this.userRole.asObservable();
+  public currentUserRegNo$: Observable<string | null> = this.currentUserRegNo.asObservable();
 
-  // Define your hardcoded password (for demo purposes ONLY)
-  private readonly HARDCODED_PASSWORD = 'Jaat'; // <<< CHANGE THIS PASSWORD!
+  // Convenience observable to easily check if the user is an admin
+  public isAdmin$: Observable<boolean> = this.userRole$.pipe(
+    map(role => role === 'admin')
+  );
 
-  constructor(private router: Router) { }
+  // --- Hardcoded credentials for demonstration ---
+  // Admin: 5-digit number
+  private readonly ADMIN_USERNAME = '12345';
+  private readonly ADMIN_PASSWORD = 'AdminPassword123';
+  // Student: Alphanumeric string
+  private readonly STUDENT_USERNAME = '22BAI10072';
+  private readonly STUDENT_PASSWORD = 'StudentPassword123';
+  // -----------------------------------------
 
-  // Check if a login token exists in localStorage on service initialization
-  private hasToken(): boolean {
-    return !!localStorage.getItem('auth_token');
+  private readonly isBrowser: boolean;
+
+  constructor(
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+    // When the service initializes, check for all stored session info
+    if (this.isBrowser) {
+      this.loggedIn.next(this.hasToken());
+      this.userRole.next(this.getRoleFromStorage());
+      this.currentUserRegNo.next(this.getRegNoFromStorage());
+    }
   }
 
-  // Login method: checks password, sets token, updates state
-  login(password: string): Observable<boolean> {
-    // Simulate API call delay (optional)
-    return of(password === this.HARDCODED_PASSWORD).pipe(
-      delay(500), // Simulate network delay
+  private hasToken(): boolean {
+    if (this.isBrowser) {
+      return !!localStorage.getItem('auth_token');
+    }
+    return false;
+  }
+
+  private getRoleFromStorage(): UserRole {
+    if (this.isBrowser) {
+      return localStorage.getItem('user_role') as UserRole;
+    }
+    return null;
+  }
+  
+  private getRegNoFromStorage(): string | null {
+    if (this.isBrowser) {
+      return localStorage.getItem('user_reg_no');
+    }
+    return null;
+  }
+
+  // Updated login method to handle username and password
+  public login(username: string, password: string): Observable<boolean> {
+    let role: UserRole = null;
+    let regNo: string | null = null;
+    let loginSuccess = false;
+
+    // Check if it's an admin login
+    if (username === this.ADMIN_USERNAME && password === this.ADMIN_PASSWORD) {
+      role = 'admin';
+      loginSuccess = true;
+    } 
+    // Check if it's a student login
+    else if (username === this.STUDENT_USERNAME && password === this.STUDENT_PASSWORD) {
+      role = 'student';
+      regNo = username; // The student's username is their registration number
+      loginSuccess = true;
+    }
+
+    return of(loginSuccess).pipe(
+      delay(500),
       tap(success => {
-        if (success) {
-          // If password matches, set a dummy token and update state
-          localStorage.setItem('auth_token', 'some_dummy_jwt_token_for_basic_auth');
-          this.loggedIn.next(true); // Emit true to all subscribers
-          this.router.navigate(['/getStudents']); // Navigate to protected page
+        if (success && this.isBrowser && role) {
+          // Store all relevant info in localStorage
+          localStorage.setItem('auth_token', 'dummy_token_for_' + role);
+          localStorage.setItem('user_role', role);
+          if (regNo) {
+            localStorage.setItem('user_reg_no', regNo);
+          }
+          // Update the observables
+          this.loggedIn.next(true);
+          this.userRole.next(role);
+          this.currentUserRegNo.next(regNo);
+          this.router.navigate(['/home']);
         } else {
-          this.loggedIn.next(false); // Emit false
+          this.logout(); // Clear any partial state on failure
         }
       })
     );
   }
 
-  // Logout method: clears token, updates state, redirects to login
-  logout(): void {
-    localStorage.removeItem('auth_token');
-    this.loggedIn.next(false); // Emit false to all subscribers
-    this.router.navigate(['/login']); // Redirect to login page
+  // Updated logout to clear all session information
+  public logout(): void {
+    if (this.isBrowser) {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user_role');
+      localStorage.removeItem('user_reg_no');
+      this.loggedIn.next(false);
+      this.userRole.next(null);
+      this.currentUserRegNo.next(null);
+      this.router.navigate(['/login']);
+    }
   }
 }

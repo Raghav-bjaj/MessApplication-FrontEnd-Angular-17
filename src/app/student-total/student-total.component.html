@@ -1,1 +1,48 @@
-<p>student-total works!</p>
+<div class="total-container">
+  <!-- Check the user's role -->
+  <ng-container *ngIf="isAdmin$ | async; else studentView">
+    <!-- ADMIN VIEW: Show the lookup form -->
+    <mat-card class="total-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>manage_search</mat-icon>
+        <mat-card-title>Find Student Total</mat-card-title>
+        <mat-card-subtitle>Enter a registration number to look up a student's bill.</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="adminForm" (ngSubmit)="fetchAdminTotal()">
+          <mat-form-field appearance="outline">
+            <mat-label>Registration Number</mat-label>
+            <input type="text" matInput formControlName="reg" required>
+          </mat-form-field>
+          <button mat-flat-button color="primary" type="submit">Fetch Total</button>
+        </form>
+        <!-- Display the admin's lookup result -->
+        <div *ngIf="responseMessage" class="response-message">
+          <p>{{ responseMessage }}</p>
+          <p *ngIf="adminTotal !== undefined" class="total-amount">₹ {{ adminTotal }}</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </ng-container>
+
+  <!-- STUDENT VIEW: This is shown if the user is not an admin -->
+  <ng-template #studentView>
+    <ng-container *ngIf="{ total: (studentTotal$ | async), regNo: (regNo$ | async) } as data; else loading">
+      <mat-card class="total-card">
+        <mat-card-header>
+          <mat-icon mat-card-avatar>receipt</mat-icon>
+          <mat-card-title>My Meal Bill</mat-card-title>
+          <mat-card-subtitle>Reg No: {{ data.regNo }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <p class="total-amount">₹ {{ data.total }}</p>
+        </mat-card-content>
+      </mat-card>
+    </ng-container>
+  </ng-template>
+
+  <!-- Loading spinner for the student view -->
+  <ng-template #loading>
+    <mat-spinner diameter="50"></mat-spinner>
+  </ng-template>
+</div>

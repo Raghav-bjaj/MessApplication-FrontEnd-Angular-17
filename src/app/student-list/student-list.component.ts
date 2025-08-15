@@ -1,100 +1,100 @@
+import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
-import { StudentService } from '../student.service'; 
-import { HttpClientModule } from '@angular/common/http';
+import { ReactiveFormsModule, FormControl } from '@angular/forms'; // Import necessary form modules
+import { StudentService, Student } from '../student.service';
+import { AuthService } from '../auth.service';
+import { Observable } from 'rxjs';
 
-console.log("At the start of studentList Component")
+// Import all necessary Angular Material modules
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatSort, MatSortModule } from '@angular/material/sort';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatIconModule } from '@angular/material/icon';
+import { MatDatepickerModule } from '@angular/material/datepicker'; // For the date picker
+import { MatNativeDateModule } from '@angular/material/core'; // For the date picker
+import { MatButtonModule } from '@angular/material/button'; // For the search button
 
 @Component({
   selector: 'app-student-list',
   standalone: true,
-  imports: [CommonModule, HttpClientModule],
-  //inline template and styles
-  template: `
-    <div class="student-list">
-  <h1>Student List</h1>
-  <table>
-    <thead>
-      <tr>
-        <!-- Table headers -->
-        
-        <th>Registration Number</th>
-        <th>Date</th>
-        <th>Breakfast</th>
-        <th>Lunch</th>
-        <th>Dinner</th>
-        <th>Total</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Iterate over students and display their details in table rows -->
-      <tr *ngFor="let student of students">
-      
-        <td>{{ student.reg }}</td>
-        <td>{{ student.date }}</td>
-        <td>{{ student.breakfast ? 'Yes' : 'No' }}</td>
-        <td>{{ student.lunch ? 'Yes' : 'No' }}</td>
-        <td>{{ student.dinner ? 'Yes' : 'No' }}</td>
-        <td>{{ student.total }}</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
-
-  `,
-
-/*<div class="student-list">
-<h1>Student List</h1>
-<ul>
-  <li *ngFor="let student of students">
-    <!-- Display student details -->
-    <strong>Name:</strong> {{ student.name }} <br>
-    <strong>Registration Number:</strong> {{ student.reg }} <br>
-    <strong>Breakfast:</strong> {{ student.breakfast ? 'Yes' : 'No' }} <br>
-    <strong>Lunch:</strong> {{ student.lunch ? 'Yes' : 'No' }} <br>                   to display in a different type
-    <strong>Dinner:</strong> {{ student.dinner ? 'Yes' : 'No' }} <br>
-    <strong>Total:</strong> {{ student.total }} <br>
-    <hr> <!-- Horizontal line to separate each student -->
-  </li>
-</ul>
-</div>
-*/
-  //templateUrl: './student-list.component.html',
-  //styleUrl: './student-list.component.css'
-  styles: [`
-    .student-list {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-    }
-    h1 {
-      color: #333;
-    }
-    ul {
-      list-style-type: none;
-      padding: 0;
-    }
-    li {
-      padding: 5px 0;
-      border-bottom: 1px solid #ddd;
-    }
-  `],
-  providers: [StudentService]
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatTableModule,
+    MatSortModule,
+    MatPaginatorModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatProgressSpinnerModule,
+    MatIconModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatButtonModule
+  ],
+  templateUrl: './student-list.component.html',
+  styleUrls: ['./student-list.component.css']
 })
-export class StudentListComponent implements OnInit {
+export class StudentListComponent implements OnInit, AfterViewInit {
+  displayedColumns: string[] = ['reg', 'date', 'breakfast', 'lunch', 'dinner', 'total'];
+  dataSource = new MatTableDataSource<Student>();
+  isLoading = true;
+  selectedDate: string;
+  isAdmin$: Observable<boolean>;
 
-  students: any[] = [];
+  // A form control to manage the date picker's value
+  dateControl = new FormControl(new Date());
 
-  constructor(private StudentService: StudentService) {}
+  @ViewChild(MatSort) sort!: MatSort;
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
 
-  ngOnInit() {
-    this.StudentService.getStudents().subscribe((data: any[]) => { 
-      this.students = data;
-  });
+  constructor(
+    private studentService: StudentService,
+    private authService: AuthService // Inject AuthService to check role
+  ) {
+    this.isAdmin$ = this.authService.isAdmin$;
+    // Set the initial date to today
+    this.selectedDate = new Date().toISOString().split('T')[0];
+  }
 
+  ngOnInit(): void {
+    this.fetchStudentData(this.selectedDate);
+  }
+
+  // A reusable method to fetch data for a given date
+  fetchStudentData(date: string): void {
+    this.isLoading = true;
+    this.selectedDate = date; // Update the displayed date
+    this.studentService.getStudentsByDate(date).subscribe({
+      next: (data) => {
+        this.dataSource.data = data;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error("Failed to fetch student list:", err);
+        this.isLoading = false;
+      }
+    });
+  }
+
+  // This method is called when the admin searches for a new date
+  searchByDate(): void {
+    if (this.dateControl.value) {
+      const newDate = this.dateControl.value;
+      const formattedDate = newDate.toISOString().split('T')[0];
+      this.fetchStudentData(formattedDate);
+    }
+  }
+
+  ngAfterViewInit(): void {
+    this.dataSource.sort = this.sort;
+    this.dataSource.paginator = this.paginator;
+  }
+
+  applyFilter(event: Event): void {
+    const filterValue = (event.target as HTMLInputElement).value;
+    this.dataSource.filter = filterValue.trim().toLowerCase();
+  }
 }
-  
-
-}
-
-console.log("At the end of studentList Component")
-

@@ -1,0 +1,70 @@
+
+.container {
+  padding: 24px;
+}
+
+.header-container {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: #333;
+  margin-bottom: 24px;
+}
+
+.header-container mat-icon {
+  font-size: 2.8rem;
+  height: 2.8rem;
+  width: 2.8rem;
+}
+
+.header-container h2 {
+  font-size: 2.2rem;
+  font-weight: 300;
+  margin: 0;
+}
+
+/* Admin View Styles */
+.admin-menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.mat-expansion-panel-header {
+    font-size: 1rem;
+}
+
+.side-dishes-title {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--primary-color);
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+.side-dishes-content {
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.5;
+}
+
+/* Student View Styles */
+.student-menu-grid {
+  display: grid;
+  grid-template-columns: 1fr; /* A single column for a cleaner look */
+  gap: 15px;
+  max-width: 700px;
+}
+
+.upcoming-panel {
+    border-radius: 8px !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.upcoming-panel .mat-expansion-panel-header {
+    font-size: 1.1rem;
+}
+
+.upcoming-panel .side-dishes-title {
+    color: var(--accent-color);
+}

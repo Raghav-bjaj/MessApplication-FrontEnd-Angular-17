@@ -1,89 +1,57 @@
-// src/app/login/login.component.ts
-
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common'; // Required for ngIf
-import { FormsModule } from '@angular/forms'; // Required for ngModel
-import { AuthService } from '../auth.service'; // Import your auth service
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { AuthService } from '../auth.service';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule], // Make sure these are imported
-  template: `
-    <div class="login-container">
-      <h2>Login</h2>
-      <form (ngSubmit)="onLogin()">
-        <div class="form-group">
-          <label for="password">Password:</label>
-          <input type="password" id="password" [(ngModel)]="password" name="password" required>
-        </div>
-        <button type="submit">Login</button>
-      </form>
-      <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
-    </div>
-  `,
-  styles: `
-    .login-container {
-      max-width: 400px;
-      margin: 50px auto;
-      padding: 20px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      background-color: #fff;
-      text-align: center;
-    }
-    .form-group {
-      margin-bottom: 15px;
-    }
-    label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-    }
-    input[type="password"] {
-      width: calc(100% - 20px);
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-    }
-    button {
-      background-color: #007bff;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
-    .error-message {
-      color: red;
-      margin-top: 10px;
-    }
-  `
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatProgressSpinnerModule,
+    MatIconModule
+  ],
+  templateUrl: './login.component.html',
+  styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
+  username = '';
   password = '';
   errorMessage: string | null = null;
+  isLoading = false;
 
   constructor(private authService: AuthService) { }
 
   onLogin(): void {
-    this.errorMessage = null; // Clear previous errors
-    this.authService.login(this.password).subscribe(
-      (success) => {
+    if (!this.username || !this.password) {
+      this.errorMessage = 'Both username and password are required.';
+      return;
+    }
+    this.isLoading = true;
+    this.errorMessage = null;
+    this.authService.login(this.username, this.password).subscribe({
+      next: (success) => {
         if (!success) {
-          this.errorMessage = 'Invalid password. Please try again.';
+          this.errorMessage = 'Invalid credentials. Please try again.';
         }
-        // Navigation is handled by the AuthService
+        this.isLoading = false;
       },
-      (error) => {
-        this.errorMessage = 'An error occurred during login. Please try again later.';
+      error: (error) => {
+        this.errorMessage = 'An error occurred. Please try again later.';
         console.error('Login error:', error);
+        this.isLoading = false;
       }
-    );
+    });
   }
 }

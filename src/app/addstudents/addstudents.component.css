@@ -1,0 +1,50 @@
+.form-container {
+  display: flex;
+  justify-content: center;
+  padding: 40px;
+}
+
+mat-card {
+  width: 100%;
+  max-width: 600px;
+}
+
+mat-card-header {
+  margin-bottom: 20px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+.checkbox-group {
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+}
+
+.response-message {
+  margin-top: 20px;
+  padding: 15px;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.success {
+  background-color: #e8f5e9; /* Light green */
+  color: #2e7d32; /* Dark green */
+  border: 1px solid #a5d6a7;
+}
+
+.error {
+  background-color: #ffebee; /* Light red */
+  color: #c62828; /* Dark red */
+  border: 1px solid #ef9a9a;
+}
