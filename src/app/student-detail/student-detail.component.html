@@ -1,1 +1,77 @@
-<p>student-detail works!</p>
+<div class="container">
+  <!-- Check the user's role -->
+  <ng-container *ngIf="isAdmin$ | async; else studentView">
+    <!-- ADMIN VIEW: Show search form -->
+    <mat-card class="search-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>history</mat-icon>
+        <mat-card-title>Student Attendance History</mat-card-title>
+        <mat-card-subtitle>Enter a registration number to view all their past records.</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="searchForm" (ngSubmit)="fetchStudentDetails()" class="search-form">
+          <mat-form-field appearance="outline">
+            <mat-label>Registration Number</mat-label>
+            <input matInput formControlName="reg" required>
+          </mat-form-field>
+          <button mat-raised-button color="primary" type="submit" [disabled]="searchForm.invalid || isLoading">
+            <span *ngIf="!isLoading">Fetch History</span>
+            <mat-progress-spinner *ngIf="isLoading" mode="indeterminate" diameter="24"></mat-progress-spinner>
+          </button>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </ng-container>
+
+  <!-- STUDENT VIEW: Show history directly -->
+  <ng-template #studentView>
+    <div class="header-container">
+        <mat-icon>receipt_long</mat-icon>
+        <h2>My Attendance History</h2>
+    </div>
+  </ng-template>
+
+  <!-- COMMON RESULTS AREA (for both admin and student) -->
+  <div *ngIf="isLoading" class="spinner-container">
+    <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+  </div>
+
+  <div *ngIf="!isLoading && (searched || !(isAdmin$ | async))" class="results-container">
+    <div *ngIf="dataSource.data.length > 0; else noResults">
+      <div class="table-container mat-elevation-z8">
+        <table mat-table [dataSource]="dataSource" matSort>
+          <!-- Column Definitions -->
+          <ng-container matColumnDef="date">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
+            <td mat-cell *matCellDef="let row">{{ row.date }}</td>
+          </ng-container>
+          <ng-container matColumnDef="breakfast">
+            <th mat-header-cell *matHeaderCellDef>Breakfast</th>
+            <td mat-cell *matCellDef="let row">{{ row.breakfast ? 'Yes' : 'No' }}</td>
+          </ng-container>
+          <ng-container matColumnDef="lunch">
+            <th mat-header-cell *matHeaderCellDef>Lunch</th>
+            <td mat-cell *matCellDef="let row">{{ row.lunch ? 'Yes' : 'No' }}</td>
+          </ng-container>
+          <ng-container matColumnDef="dinner">
+            <th mat-header-cell *matHeaderCellDef>Dinner</th>
+            <td mat-cell *matCellDef="let row">{{ row.dinner ? 'Yes' : 'No' }}</td>
+          </ng-container>
+          <ng-container matColumnDef="total">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Total</th>
+            <td mat-cell *matCellDef="let row">₹{{ row.total }}</td>
+          </ng-container>
+
+          <!-- Row Definitions -->
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+      </div>
+    </div>
+    <ng-template #noResults>
+      <div class="no-results">
+        <p>No attendance records found.</p>
+      </div>
+    </ng-template>
+  </div>
+</div>

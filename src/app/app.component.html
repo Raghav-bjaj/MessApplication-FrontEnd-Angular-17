@@ -1,39 +1,4 @@
-<!-- src/app/app.component.html -->
-
-<!-- Add a logout button, maybe in your navigation -->
-<nav>
-  <a routerLink="/getStudents">Students List</a> |
-  <a routerLink="/students/add/new">Add Student</a> |
-  <!-- Conditionally show login/logout -->
-  <ng-container *ngIf="authService.isLoggedIn$ | async; else showLogin">
-    <button (click)="authService.logout()">Logout</button>
-  </ng-container>
-  <ng-template #showLogin>
-    <a routerLink="/login">Login</a>
-  </ng-template>
-</nav>
-
-<router-outlet></router-outlet>
-```
-
-And in `app.component.ts`, you'll need to inject the `AuthService`:
-
-```typescript
-// src/app/app.component.ts
-import { Component } from '@angular/core';
-import { RouterOutlet, RouterLink } from '@angular/router'; // Import RouterLink for navigation
-import { CommonModule } from '@angular/common'; // Import CommonModule for ngIf/ngTemplate
-import { AuthService } from './auth.service'; // Import your auth service
-
-@Component({
-  selector: 'app-root',
-  standalone: true,
-  imports: [RouterOutlet, RouterLink, CommonModule], // Add RouterLink and CommonModule
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
-})
-export class AppComponent {
-  title = 'MessApplicationFrontEnd';
-
-  constructor(public authService: AuthService) {} // Make authService public to use in template
-}
+<app-navigation></app-navigation>
+<main class="content-wrapper">
+  <router-outlet></router-outlet>
+</main>

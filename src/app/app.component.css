@@ -1,0 +1,8 @@
+/* src/app/app.component.css */
+.toolbar-spacer {
+  flex: 1 1 auto; /* This is a common pattern to push items apart in a flex container */
+}
+
+.content-wrapper {
+  padding: 24px; /* Add some breathing room around your main content */
+}

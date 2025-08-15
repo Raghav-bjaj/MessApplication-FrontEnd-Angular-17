@@ -1,1 +1,58 @@
-<p>delete-student works!</p>
+<div class="form-container">
+  <mat-card>
+    <!-- This section is for SEARCHING for a record -->
+    <ng-container *ngIf="!foundStudent">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>delete_forever</mat-icon>
+        <mat-card-title>Delete Student Attendance</mat-card-title>
+        <mat-card-subtitle>Find the record you wish to permanently delete.</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="searchForm" (ngSubmit)="searchForRecord()" class="search-form">
+          <mat-form-field appearance="outline">
+            <mat-label>Registration Number</mat-label>
+            <input matInput formControlName="reg" required>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Attendance Date</mat-label>
+            <input matInput [matDatepicker]="picker" formControlName="date" required>
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
+          <button mat-flat-button color="primary" type="submit" [disabled]="searchForm.invalid || isLoading">
+            <span *ngIf="!isLoading">Find Record</span>
+            <mat-progress-spinner *ngIf="isLoading" mode="indeterminate" diameter="24"></mat-progress-spinner>
+          </button>
+        </form>
+      </mat-card-content>
+    </ng-container>
+
+    <!-- This section is for CONFIRMING the deletion -->
+    <ng-container *ngIf="foundStudent">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>warning_amber</mat-icon>
+        <mat-card-title>Confirm Deletion</mat-card-title>
+        <mat-card-subtitle>Are you sure you want to delete this record? This action cannot be undone.</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-list role="list">
+          <mat-list-item role="listitem"><strong>Reg. No:</strong> {{ foundStudent.reg }}</mat-list-item>
+          <mat-list-item role="listitem"><strong>Date:</strong> {{ foundStudent.date }}</mat-list-item>
+          <mat-list-item role="listitem"><strong>Total:</strong> ₹{{ foundStudent.total }}</mat-list-item>
+        </mat-list>
+        <button mat-flat-button color="warn" (click)="deleteTheStudent()" [disabled]="isLoading" class="delete-button">
+          <span *ngIf="!isLoading">Yes, Delete Record</span>
+          <mat-progress-spinner *ngIf="isLoading" mode="indeterminate" diameter="24"></mat-progress-spinner>
+        </button>
+      </mat-card-content>
+    </ng-container>
+
+    <!-- Response Message Area -->
+    <mat-card-footer *ngIf="responseMessage">
+       <div class="response-message" [ngClass]="{'error': isError, 'success': !isError}">
+        {{ responseMessage }}
+      </div>
+    </mat-card-footer>
+  </mat-card>
+</div>
+

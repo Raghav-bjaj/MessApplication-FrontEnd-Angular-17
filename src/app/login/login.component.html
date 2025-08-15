@@ -1,0 +1,32 @@
+<div class="login-container">
+  <mat-card class="login-card">
+    <mat-card-title>
+      <mat-icon>login</mat-icon>
+      <span>Login</span>
+    </mat-card-title>
+    <mat-card-content>
+      <form (ngSubmit)="onLogin()">
+        <!-- Username Field -->
+        <mat-form-field appearance="outline">
+          <mat-label>Username / Registration No.</mat-label>
+          <input matInput [(ngModel)]="username" name="username" required>
+        </mat-form-field>
+
+        <!-- Password Field -->
+        <mat-form-field appearance="outline">
+          <mat-label>Password</mat-label>
+          <input matInput type="password" [(ngModel)]="password" name="password" required>
+        </mat-form-field>
+
+        <!-- Error Message Display -->
+        <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
+
+        <!-- Login Button with Loading Spinner -->
+        <button mat-flat-button color="primary" class="login-button" type="submit" [disabled]="isLoading">
+          <span *ngIf="!isLoading">Login</span>
+          <mat-progress-spinner *ngIf="isLoading" mode="indeterminate" diameter="24"></mat-progress-spinner>
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

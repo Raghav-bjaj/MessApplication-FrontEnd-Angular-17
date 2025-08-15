@@ -1,36 +1,34 @@
 import { Component } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { AuthService } from '../auth.service';
+import { Observable } from 'rxjs';
 
-console.log("At the start of Navigation Component")
+// Material Modules
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatButtonModule } from '@angular/material/button';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-navigation',
   standalone: true,
-  imports : [RouterModule],
-  template: `
-    <nav>
-      <a routerLink="/getStudents" routerLinkActive="active">Student List</a> |
-      <a routerLink="/students/:reg" routerLinkActive="active"> Particular  Student Detail</a> |
-      <a routerLink="/students/add/:reg" routerLinkActive="active">Add Student</a> |
-      <a routerLink="/students/update/:reg" routerLinkActive="active">Update Student</a> |
-      <a routerLink="/students/delete/:reg/:date" routerLinkActive="active">Delete Student</a> |
-      <a routerLink="/students/total/:reg" routerLinkActive="active">Student Total</a>
-    </nav>
-  `,
-  styles: [`
-    nav {
-      margin: 20px;
-    }
-    a {
-      text-decoration: none;
-      padding: 10px;
-      color: #333;
-    }
-    .active {
-      font-weight: bold;
-    }
-  `]
+  imports: [
+    CommonModule,
+    RouterLink,
+    MatToolbarModule,
+    MatButtonModule,
+    MatMenuModule,
+    MatIconModule
+  ],
+  templateUrl: './navigation-bar.component.html',
+  styleUrls: ['./navigation-bar.component.css']
 })
-export class NavigationComponent {}
+export class NavigationComponent {
+  // Expose the registration number observable to the template
+  currentUserRegNo$: Observable<string | null>;
 
-console.log("At the end of NAvigation Component")
+  constructor(public authService: AuthService) {
+    this.currentUserRegNo$ = this.authService.currentUserRegNo$;
+  }
+}

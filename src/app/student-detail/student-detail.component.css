@@ -1,0 +1,79 @@
+
+.container {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px; /* Increased gap for more breathing room */
+}
+
+.search-card {
+  max-width: 100%; /* Allow card to take full width */
+}
+
+/* Added specific styles for the card header content */
+:host ::ng-deep .search-card .mat-mdc-card-header-text {
+  margin: 0; /* Remove default margin to help with alignment */
+}
+
+.search-form {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap; /* Allow wrapping on smaller screens */
+  margin-top: 16px; /* Add space between header and form */
+}
+
+.search-form mat-form-field {
+  flex: 1 1 300px; /* Allow field to grow but have a base size */
+}
+
+.search-form button {
+    height: 56px; /* Match height of the form field */
+}
+
+.header-container {
+  display: flex;
+  align-items: center;
+  gap: 16px; /* Increased gap */
+  color: #333;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee; /* Add a subtle separator */
+}
+
+.header-container mat-icon {
+  font-size: 2.8rem;
+  height: 2.8rem;
+  width: 2.8rem;
+}
+
+.header-container h2 {
+  font-size: 2.2rem;
+  font-weight: 300;
+  margin: 0;
+}
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 50px;
+}
+
+.table-container {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+table {
+  width: 100%;
+}
+
+.no-results {
+  text-align: center;
+  padding: 40px;
+  font-size: 1.1rem;
+  color: #666;
+  background-color: #f9f9f9;
+  border: 1px dashed #ddd;
+  border-radius: 8px;
+}

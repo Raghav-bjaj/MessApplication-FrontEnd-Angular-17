@@ -1,149 +1,146 @@
+
 import { Component, OnInit } from '@angular/core';
-import { StudentService } from '../student.service';  
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
-import { HttpClientModule } from '@angular/common/http';
+import { StudentService, Student } from '../student.service';
 
-console.log("At the start of studenUPP Component")
-
+// Import all necessary Angular Material modules
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-update-student',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, HttpClientModule],
-  template: `
-    <div class="update-student">
-      <h2>Update Student</h2>
-      <form [formGroup]="studentForm" (ngSubmit)="updateStudent()">
-        
-        
-        <!-- Registration Field -->
-        <label for="reg">Registration Number:</label>
-        <input type="text" formControlName="reg" required>
-        <div *ngIf="studentForm.controls['reg'].invalid && studentForm.controls['reg'].touched">
-          Registration number is required.
-        </div>
-        <br>
-
-        <!-- Date Field -->
-        <label for="date">Date:</label>
-        <input type="text" formControlName="date">
-        <div *ngIf="studentForm.controls['date'].invalid && studentForm.controls['date'].touched">
-          Date is required.
-        </div>
-        <br>
-
-        <!-- Breakfast Field -->
-        <label for="breakfast">Breakfast:</label>
-        <input type="checkbox" formControlName="breakfast">
-        <br>
-
-        <!-- Lunch Field -->
-        <label for="lunch">Lunch:</label>
-        <input type="checkbox" formControlName="lunch">
-        <br>
-
-        <!-- Dinner Field -->
-        <label for="dinner">Dinner:</label>
-        <input type="checkbox" formControlName="dinner">
-        <br>
-
-        
-
-        <!-- Submit Button -->
-        <button type="submit" [disabled]="studentForm.invalid">Update Student</button>
-      </form>
-
-
-      <!-- Display the response message -->
-      <div *ngIf="responseMessage" class="response-message">
-        {{ responseMessage }}
-      </div>
-    </div>
-  `,
-  styles: [`
-    .update-student {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-    }
-    h2 {
-      color: #333;
-    }
-    form {
-      margin-top: 20px;
-    }
-    label {
-      margin-right: 10px;
-    }
-  `],
-  providers: [StudentService]
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatCheckboxModule,
+    MatButtonModule,
+    MatProgressSpinnerModule,
+    MatIconModule
+  ],
+  templateUrl: './update-student.component.html',
+  styleUrls: ['./update-student.component.css']
 })
 export class UpdateStudentComponent implements OnInit {
-  studentForm: FormGroup; // Form group for reactive form
-  responseMessage: string = ''; // Property to store the response message
+  searchForm: FormGroup;
+  studentForm: FormGroup;
   
-  student: any = {  // Initial state for the student object with default values
-    name: '',
-    reg: '',
-    breakfast: false,
-    lunch: false,
-    dinner: false,
-    total: null
-  };
+  responseMessage: string = '';
+  isError = false;
+  isLoading = false;
+  studentData: Student | null = null; // To hold the fetched student record
 
   constructor(
-    private studentService: StudentService, private fb: FormBuilder, 
-    private route: ActivatedRoute  // Inject ActivatedRoute to get route parameters
+    private fb: FormBuilder,
+    private studentService: StudentService
   ) {
-    this.studentForm = this.fb.group({
-      
+    // Form for searching for a student record
+    this.searchForm = this.fb.group({
       reg: ['', Validators.required],
-      date: ['', Validators.required],
+      date: [new Date(), Validators.required]
+    });
+
+    // Form for updating the student record (initially disabled)
+    this.studentForm = this.fb.group({
+      reg: [{ value: '', disabled: true }], // Reg and date are non-editable
+      date: [{ value: '', disabled: true }],
       breakfast: [false],
       lunch: [false],
-      dinner: [false],
-      total: [null]
+      dinner: [false]
     });
   }
 
-  ngOnInit(): void {
-    
+  ngOnInit(): void {}
+
+  // Helper to format date to "YYYY-MM-DD"
+  private formatDate(date: Date): string {
+    return date.toISOString().split('T')[0];
   }
 
-  
+  // Step 1: Search for the student record
+  searchStudent(): void {
+    if (this.searchForm.invalid) { return; }
 
-  updateStudent(): void {
-    if (this.studentForm.valid) { // Only submit if the form is valid
-      this.studentService.updateStudents(this.studentForm.value).subscribe(
-        (response: string) => {
-          console.log(response);
-          this.responseMessage = response;  
-          //alert(response);
-          this.resetForm(); 
-        },
-        (error) => {
-          console.error('Error adding student:', error);
-          this.responseMessage = 'An error occurred while adding the student.';
+    this.isLoading = true;
+    this.studentData = null;
+    this.responseMessage = '';
+    this.isError = false;
+
+    const reg = this.searchForm.value.reg;
+    const date = this.formatDate(this.searchForm.value.date);
+
+    // We use the `students` method which should return a list.
+    // We expect a list with one item if the record is found.
+    this.studentService.students(reg).subscribe({
+      next: (students) => {
+        // Find the specific record for the chosen date from the results
+        const record = students.find(s => s.date === date);
+        if (record) {
+          this.studentData = record;
+          // Populate the update form with the fetched data
+          this.studentForm.patchValue({
+            reg: record.reg,
+            date: record.date,
+            breakfast: record.breakfast,
+            lunch: record.lunch,
+            dinner: record.dinner
+          });
+        } else {
+          this.responseMessage = `No record found for ${reg} on ${date}.`;
+          this.isError = true;
         }
-      );
-    } else {
-      console.warn('Form is invalid');
-    }
+        this.isLoading = false;
+      },
+      error: (err) => {
+        this.responseMessage = 'Error fetching student data.';
+        this.isError = true;
+        this.isLoading = false;
+        console.error(err);
+      }
+    });
   }
 
-  
-  resetForm(): void {
-    this.studentForm.reset({
-      name: '',
-      reg: '',
-      breakfast: false,
-      lunch: false,
-      dinner: false,
-      total: null
+  // Step 2: Update the student record
+  updateStudent(): void {
+    if (this.studentForm.invalid || !this.studentData) { return; }
+
+    this.isLoading = true;
+    this.responseMessage = '';
+    this.isError = false;
+
+    // Construct the payload with the updated values
+    const updatedRecord: Student = {
+      ...this.studentData, // Start with existing data (like auid)
+      ...this.studentForm.value // Override with form values
+    };
+
+    this.studentService.updateStudents(updatedRecord).subscribe({
+      next: (response) => {
+        this.responseMessage = response;
+        this.isLoading = false;
+        // Reset to the search state after a successful update
+        this.studentData = null; 
+        this.searchForm.reset({ date: new Date() });
+      },
+      error: (err) => {
+        this.responseMessage = 'Failed to update record.';
+        this.isError = true;
+        this.isLoading = false;
+        console.error(err);
+      }
     });
   }
 }
-
-console.log("At the end of studenUPP Component")

@@ -1,97 +1,78 @@
-import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { StudentService } from '../student.service';
+import { AuthService } from '../auth.service';
+import { Observable, of } from 'rxjs'; // <-- Import `of`
+import { take } from 'rxjs/operators';
 import { ReactiveFormsModule, FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
-
-console.log("At the start of studenTotal Component");
+import { MatCardModule } from '@angular/material/card';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-student-total',
   standalone: true,
-  imports: [CommonModule, HttpClientModule, ReactiveFormsModule],
-  template: `
-    <div class="student-list">
-      <h1>Student Total</h1>
-
-      <form [formGroup]="studentForm" (ngSubmit)="fetchStudentTotal()">
-        <div>
-          <label for="reg">Registration Number:</label>
-          <input type="text" formControlName="reg" required>
-          <div *ngIf="studentForm.controls['reg'].invalid && studentForm.controls['reg'].touched">
-            Registration number is required.
-          </div>
-          <br>
-        </div>
-
-        <button type="submit">Fetch Total</button>
-      </form>
-
-      <!-- Display the registration number and total -->
-      <div *ngIf="studentTotal !== undefined">
-        <p>Total: {{ studentTotal }}</p>
-      </div>
-
-      <!-- Display the response message -->
-      <div *ngIf="responseMessage" class="response-message">
-        {{ responseMessage }}
-      </div>
-    </div>
-  `,
-  styles: [`
-    .student-list {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-    }
-    h1 {
-      color: #333;
-    }
-    ul {
-      list-style-type: none;
-      padding: 0;
-    }
-    li {
-      padding: 5px 0;
-      border-bottom: 1px solid #ddd;
-    }
-  `],
-  providers: [StudentService]
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatCardModule,
+    MatProgressSpinnerModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule
+  ],
+  templateUrl: './student-total.component.html',
+  styleUrls: ['./student-total.component.css']
 })
-
 export class StudentTotalComponent implements OnInit {
-
+  isAdmin$!: Observable<boolean>;
+  // Initialize with a default observable using `of()`
+  studentTotal$: Observable<number> = of(0);
+  regNo$: Observable<string | null> = of(null);
+  adminForm: FormGroup;
+  adminTotal?: number;
   responseMessage: string = '';
-  studentTotal?: number;  // Use `?` to denote that this value can be undefined
-  studentForm: FormGroup;
 
-  constructor(private fb: FormBuilder, private studentService: StudentService) {
-    this.studentForm = this.fb.group({
+  constructor(
+    private fb: FormBuilder,
+    private studentService: StudentService,
+    private authService: AuthService
+  ) {
+    this.adminForm = this.fb.group({
       reg: ['', Validators.required],
     });
-  }  
-  
-  ngOnInit() {}
+  }
 
-  fetchStudentTotal() {
-    const reg = this.studentForm.get('reg')?.value;
-    if (this.studentForm.valid) {
-      this.studentService.studentTotal(reg).subscribe({
-        next: (data: number) => {  
-          this.studentTotal = data;  
-          this.responseMessage = ''; 
-        },
-        error: (error: any) => {
-          console.error('Error fetching student total:', error);
-          this.responseMessage = 'An error occurred while fetching the student total.';
-          this.studentTotal = undefined; 
-        }
-      });
-    } else {
-      console.warn('Form is invalid');
+  ngOnInit(): void {
+    this.isAdmin$ = this.authService.isAdmin$;
+    this.authService.userRole$.pipe(take(1)).subscribe(role => {
+      if (role === 'student') {
+        this.studentTotal$ = this.studentService.getMyStudentTotal();
+        this.regNo$ = this.authService.currentUserRegNo$;
+      }
+    });
+  }
+
+  fetchAdminTotal() {
+    if (this.adminForm.invalid) {
       this.responseMessage = 'Please provide a registration number.';
-      this.studentTotal = undefined; 
+      return;
     }
+    const reg = this.adminForm.get('reg')?.value;
+    this.studentService.studentTotalByReg(reg).subscribe({
+      next: (data: number) => {
+        this.adminTotal = data;
+        this.responseMessage = `Total for ${reg}:`;
+      },
+      error: (error: any) => {
+        console.error('Error fetching student total:', error);
+        this.responseMessage = 'An error occurred or student not found.';
+        this.adminTotal = undefined;
+      }
+    });
   }
 }
-
-console.log("At the end of studenTotal Component");
