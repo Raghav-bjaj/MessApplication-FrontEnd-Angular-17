@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormControl } from '@angular/forms'; // Import necessary form modules
+import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { StudentService, Student } from '../student.service';
 import { AuthService } from '../auth.service';
 import { Observable } from 'rxjs';
@@ -13,9 +13,10 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
-import { MatDatepickerModule } from '@angular/material/datepicker'; // For the date picker
-import { MatNativeDateModule } from '@angular/material/core'; // For the date picker
-import { MatButtonModule } from '@angular/material/button'; // For the search button
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MaskRegNoPipe } from "../mask-reg-no.pipe";
 
 @Component({
   selector: 'app-student-list',
@@ -32,7 +33,8 @@ import { MatButtonModule } from '@angular/material/button'; // For the search bu
     MatIconModule,
     MatDatepickerModule,
     MatNativeDateModule,
-    MatButtonModule
+    MatButtonModule,
+    MaskRegNoPipe
   ],
   templateUrl: './student-list.component.html',
   styleUrls: ['./student-list.component.css']
@@ -43,8 +45,8 @@ export class StudentListComponent implements OnInit, AfterViewInit {
   isLoading = true;
   selectedDate: string;
   isAdmin$: Observable<boolean>;
+  isGuest$: Observable<boolean>; // To handle guest logic
 
-  // A form control to manage the date picker's value
   dateControl = new FormControl(new Date());
 
   @ViewChild(MatSort) sort!: MatSort;
@@ -52,15 +54,25 @@ export class StudentListComponent implements OnInit, AfterViewInit {
 
   constructor(
     private studentService: StudentService,
-    private authService: AuthService // Inject AuthService to check role
+    private authService: AuthService
   ) {
     this.isAdmin$ = this.authService.isAdmin$;
-    // Set the initial date to today
-    this.selectedDate = new Date().toISOString().split('T')[0];
+    this.isGuest$ = this.authService.isGuest$;
+    // Set the initial date using our new, safe formatter
+    this.selectedDate = this.formatDate(new Date());
   }
 
   ngOnInit(): void {
     this.fetchStudentData(this.selectedDate);
+  }
+
+  // --- NEW, TIMEZONE-SAFE HELPER FUNCTION ---
+  private formatDate(date: Date): string {
+    const year = date.getFullYear();
+    // getMonth() is 0-indexed, so we add 1. padStart ensures it's two digits.
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   // A reusable method to fetch data for a given date
@@ -83,7 +95,8 @@ export class StudentListComponent implements OnInit, AfterViewInit {
   searchByDate(): void {
     if (this.dateControl.value) {
       const newDate = this.dateControl.value;
-      const formattedDate = newDate.toISOString().split('T')[0];
+      // Use our safe formatter here as well
+      const formattedDate = this.formatDate(newDate);
       this.fetchStudentData(formattedDate);
     }
   }
@@ -98,3 +111,4 @@ export class StudentListComponent implements OnInit, AfterViewInit {
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 }
+

@@ -3,30 +3,25 @@
     <mat-card-header>
       <mat-icon mat-card-avatar>person_add</mat-icon>
       <mat-card-title>Add Student Attendance</mat-card-title>
-      <mat-card-subtitle>Create a new daily meal record for a student.</mat-card-subtitle>
+      <mat-card-subtitle>Enter the student's attendance for a specific day.</mat-card-subtitle>
     </mat-card-header>
 
     <mat-card-content>
       <form [formGroup]="studentForm" (ngSubmit)="addStudent()">
-        <!-- Registration Number Field -->
-        <mat-form-field appearance="outline">
-          <mat-label>Registration Number</mat-label>
-          <input matInput formControlName="reg" required>
-          <mat-error *ngIf="studentForm.get('reg')?.hasError('required')">
-            Registration number is required.
-          </mat-error>
-        </mat-form-field>
+        <!-- Registration and Date Fields -->
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Registration Number</mat-label>
+            <input matInput formControlName="reg" required>
+          </mat-form-field>
 
-        <!-- Date Picker Field -->
-        <mat-form-field appearance="outline">
-          <mat-label>Attendance Date</mat-label>
-          <input matInput [matDatepicker]="picker" formControlName="date" required>
-          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-          <mat-datepicker #picker></mat-datepicker>
-          <mat-error *ngIf="studentForm.get('date')?.hasError('required')">
-            Date is required.
-          </mat-error>
-        </mat-form-field>
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Attendance Date</mat-label>
+            <input matInput [matDatepicker]="picker" formControlName="date" required>
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
+        </div>
 
         <!-- Meal Checkboxes -->
         <div class="checkbox-group">
@@ -36,17 +31,11 @@
         </div>
 
         <!-- Submit Button -->
-        <button mat-flat-button color="primary" type="submit" [disabled]="studentForm.invalid || isLoading">
-          <span *ngIf="!isLoading">Add Record</span>
+        <button mat-flat-button color="primary" type="submit" [disabled]="studentForm.invalid || isLoading" class="submit-button">
+          <span *ngIf="!isLoading">Add Attendance Record</span>
           <mat-progress-spinner *ngIf="isLoading" mode="indeterminate" diameter="24"></mat-progress-spinner>
         </button>
       </form>
-
-      <!-- Response Message -->
-      <div *ngIf="responseMessage" class="response-message" [ngClass]="{'error': isError, 'success': !isError}">
-        {{ responseMessage }}
-      </div>
     </mat-card-content>
   </mat-card>
 </div>
-

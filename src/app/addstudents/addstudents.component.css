@@ -6,45 +6,46 @@
 
 mat-card {
   width: 100%;
-  max-width: 600px;
+  max-width: 800px;
 }
 
 mat-card-header {
   margin-bottom: 20px;
 }
 
-form {
+.form-row {
   display: flex;
-  flex-direction: column;
-  gap: 15px;
+  gap: 20px;
+  margin-bottom: 20px;
 }
 
-mat-form-field {
-  width: 100%;
+.form-field {
+  flex: 1; /* Makes both form fields take up equal space */
 }
 
 .checkbox-group {
   display: flex;
   justify-content: space-around;
-  padding: 10px 0;
+  padding: 20px 0;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 20px;
 }
 
-.response-message {
-  margin-top: 20px;
-  padding: 15px;
-  border-radius: 8px;
-  text-align: center;
-  font-weight: 500;
+.submit-button {
+  width: 100%;
+  padding: 20px 0;
+  font-size: 1rem;
 }
 
-.success {
-  background-color: #e8f5e9; /* Light green */
-  color: #2e7d32; /* Dark green */
-  border: 1px solid #a5d6a7;
+/* Global styles for snackbar (in styles.css) */
+/*
+.success-snackbar {
+  background-color: #4CAF50;
+  color: white;
 }
-
-.error {
-  background-color: #ffebee; /* Light red */
-  color: #c62828; /* Dark red */
-  border: 1px solid #ef9a9a;
+.error-snackbar {
+  background-color: #F44336;
+  color: white;
 }
+*/

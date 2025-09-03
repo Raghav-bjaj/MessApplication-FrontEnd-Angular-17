@@ -1,9 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { StudentService } from '../student.service';
+import { StudentService, Student } from '../student.service';
+import { AuthService } from '../auth.service'; // <-- Import AuthService
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { take } from 'rxjs/operators';
 
-// Import all necessary Angular Material modules
+// Material Modules
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -35,56 +38,71 @@ import { MatIconModule } from '@angular/material/icon';
 })
 export class AddStudentComponent implements OnInit {
   studentForm: FormGroup;
-  responseMessage: string = '';
-  isError = false;
   isLoading = false;
+  isGuest = false; // Property to track guest status
 
   constructor(
     private fb: FormBuilder,
-    private studentService: StudentService
+    private studentService: StudentService,
+    private snackBar: MatSnackBar,
+    private authService: AuthService // <-- Inject AuthService
   ) {
-    // Initialize the form. The 'total' will be calculated by the backend.
     this.studentForm = this.fb.group({
       reg: ['', Validators.required],
-      date: [new Date(), Validators.required], // Default to today's date
+      date: [new Date(), Validators.required],
       breakfast: [false],
       lunch: [false],
-      dinner: [false],
+      dinner: [false]
     });
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+      // Check the user's role when the component initializes
+      this.authService.userRole$.pipe(take(1)).subscribe(role => {
+        this.isGuest = role === 'guest';
+      });
+  }
 
-  // Helper method to format a Date object into a "YYYY-MM-DD" string
   private formatDate(date: Date): string {
-    return date.toISOString().split('T')[0];
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   addStudent(): void {
+    // --- THIS IS THE NEW GUEST CHECK ---
+    if (this.isGuest) {
+      this.snackBar.open('You are a guest and not authorised for this action.', 'Close', {
+        duration: 3000,
+        panelClass: ['error-snackbar']
+      });
+      return; // Stop the function here
+    }
+    // ------------------------------------
+
     if (this.studentForm.invalid) {
-      return; // If the form is invalid, do nothing.
+      return;
     }
 
     this.isLoading = true;
-    this.responseMessage = '';
-    this.isError = false;
+    const formValue = this.studentForm.getRawValue();
+    const payload: Student = {
+      ...formValue,
+      date: this.formatDate(formValue.date)
+    };
 
-    // Create a copy of the form value to avoid modifying the form directly
-    const formValue = { ...this.studentForm.value };
-    // Format the date before sending it to the service
-    formValue.date = this.formatDate(formValue.date);
-
-    this.studentService.addStudents([formValue]).subscribe({
-      next: (response: string) => {
-        this.responseMessage = response;
+    this.studentService.addStudents([payload]).subscribe({
+      next: (response) => {
         this.isLoading = false;
+        this.snackBar.open(response, 'Close', { duration: 3000, panelClass: 'success-snackbar' });
         this.resetForm();
       },
       error: (error) => {
-        console.error('Error adding student:', error);
-        this.responseMessage = 'An error occurred while adding the student record.';
-        this.isError = true;
         this.isLoading = false;
+        const errorMessage = error.error || 'An error occurred while adding the student.';
+        this.snackBar.open(errorMessage, 'Close', { duration: 5000, panelClass: 'error-snackbar' });
+        console.error('Error adding student:', error);
       }
     });
   }
@@ -99,3 +117,4 @@ export class AddStudentComponent implements OnInit {
     });
   }
 }
+

@@ -1,0 +1,101 @@
+<div class="showcase-container">
+
+  <!-- Header Section -->
+  <div class="showcase-header">
+    <mat-icon>preview</mat-icon>
+    <h1>Project Showcase</h1>
+    <p>Welcome! This is a read-only guest account. Click on any feature to see it in action.</p>
+  </div>
+
+  <!-- Interactive Role Selector -->
+  <div class="role-selector">
+    <button mat-flat-button [class.active]="view === 'admin'" (click)="setView('admin')">
+      <mat-icon>admin_panel_settings</mat-icon>
+      Admin View
+    </button>
+    <button mat-flat-button [class.active]="view === 'student'" (click)="setView('student')">
+      <mat-icon>face</mat-icon>
+      Student View
+    </button>
+  </div>
+
+  <!-- Dynamic Features Grid -->
+  <div class="features-grid" [class.student-view-grid]="view === 'student'">
+    <!-- Admin Features (conditionally shown) -->
+    <ng-container *ngIf="view === 'admin'">
+      <a routerLink="/getStudents" class="feature-link">
+        <mat-card class="feature-tile">
+          <mat-card-title>View Daily Attendance</mat-card-title>
+          <mat-card-content>See a filterable, sortable list of all student attendance for a given day.</mat-card-content>
+        </mat-card>
+      </a>
+      <a routerLink="/students/dues" class="feature-link">
+        <mat-card class="feature-tile">
+          <mat-card-title>Generate Dues Report</mat-card-title>
+          <mat-card-content>Calculate and display total dues for all students within a date range.</mat-card-content>
+        </mat-card>
+      </a>
+      <a routerLink="/students/detail" class="feature-link">
+        <mat-card class="feature-tile">
+          <mat-card-title>View Student History</mat-card-title>
+          <mat-card-content>Look up the complete meal history for any individual student.</mat-card-content>
+        </mat-card>
+      </a>
+      <!-- MODIFIED ADMIN MENU LINK -->
+      <a routerLink="/menu/weekly" class="feature-link">
+        <mat-card class="feature-tile">
+          <mat-card-title>View Weekly Menu</mat-card-title>
+          <mat-card-content>See the full, hardcoded weekly menu for all meals and snacks.</mat-card-content>
+        </mat-card>
+      </a>
+      <a routerLink="/students/add/new" class="feature-link">
+        <mat-card class="feature-tile">
+          <mat-card-title>Add/Update Attendance</mat-card-title>
+          <mat-card-content>A smart "upsert" form that creates new records or merges with existing ones.</mat-card-content>
+        </mat-card>
+      </a>
+      <a routerLink="/students/update" class="feature-link">
+        <mat-card class="feature-tile">
+          <mat-card-title>Correct a Record</mat-card-title>
+          <mat-card-content>A precision tool to find and edit a specific, individual attendance record.</mat-card-content>
+        </mat-card>
+      </a>
+      <a routerLink="/students/delete" class="feature-link">
+        <mat-card class="feature-tile">
+          <mat-card-title>Delete a Record</mat-card-title>
+          <mat-card-content>A safe, two-step process to permanently delete a specific attendance record.</mat-card-content>
+        </mat-card>
+      </a>
+      <a routerLink="/students/total" class="feature-link">
+        <mat-card class="feature-tile">
+          <mat-card-title>Student Total Lookup</mat-card-title>
+          <mat-card-content>Check the current total bill for any individual student by their registration number.</mat-card-content>
+        </mat-card>
+      </a>
+    </ng-container>
+
+    <!-- Student Features (conditionally shown) -->
+    <ng-container *ngIf="view === 'student'">
+      <!-- MODIFIED STUDENT MENU LINK -->
+      <a routerLink="/menu/upcoming" class="feature-link">
+        <mat-card class="feature-tile">
+          <mat-card-title>View Today's Menu</mat-card-title>
+          <mat-card-content>See the next two upcoming meals based on the current time.</mat-card-content>
+        </mat-card>
+      </a>
+      <a routerLink="/students/detail" class="feature-link">
+        <mat-card class="feature-tile">
+          <mat-card-title>View My History</mat-card-title>
+          <mat-card-content>See a complete, sortable list of your personal meal history.</mat-card-content>
+        </mat-card>
+      </a>
+      <a routerLink="/students/total" class="feature-link">
+        <mat-card class="feature-tile">
+          <mat-card-title>View My Total Bill</mat-card-title>
+          <mat-card-content>Check your current total outstanding balance for all meals consumed.</mat-card-content>
+        </mat-card>
+      </a>
+    </ng-container>
+  </div>
+</div>
+

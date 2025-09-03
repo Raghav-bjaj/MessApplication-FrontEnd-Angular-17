@@ -1,38 +1,64 @@
-.total-container {
+
+.container {
   display: flex;
-  justify-content: center;
-  align-items: flex-start; /* Align to top */
-  padding-top: 50px;
+  justify-content: center; /* Horizontally center the content */
+  align-items: flex-start;  /* Align content to the top */
+  padding-top: 50px;      /* Add some space from the top navigation bar */
+  min-height: 80vh;       /* Ensure the container has height */
 }
 
+/*
+ Give the card a defined width so it doesn't stretch across the
+ entire screen on large monitors.
+*/
 .total-card {
   width: 100%;
-  max-width: 500px;
-  text-align: center;
+  max-width: 500px; /* Adjust this value as needed */
 }
 
-.total-card mat-icon {
-  font-size: 40px;
-  height: 40px;
-  width: 40px;
+/* --- NEW STYLE --- */
+/* Adds some space below the card header to make it less congested */
+.total-card mat-card-header {
+  margin-bottom: 20px;
+}
+
+/*
+ Styles for the form inside the card to ensure proper layout.
+*/
+.total-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Adds space between the input field and the button */
+}
+
+/*
+ Styles for the response area to ensure text is centered.
+*/
+.response-container {
+  text-align: center;
+  margin-top: 20px;
 }
 
 .total-amount {
-  font-size: 3.5rem;
-  font-weight: 300;
-  color: var(--primary-color);
-  margin: 20px 0;
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: var(--primary-color, #3f51b5); /* Use theme color */
 }
 
-/* Styles for the admin form */
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 15px; /* Space between form elements */
-  margin-top: 20px;
+/*
+ Styles for the student's view of their own bill.
+*/
+.student-card {
+  text-align: center;
 }
 
-.response-message {
-  margin-top: 20px;
-  font-size: 1.1rem;
+.student-total-display {
+  padding: 20px 0;
+}
+
+.student-total-display p {
+  font-size: 3rem;
+  font-weight: bold;
+  color: var(--primary-color, #3f51b5);
+  margin: 0;
 }

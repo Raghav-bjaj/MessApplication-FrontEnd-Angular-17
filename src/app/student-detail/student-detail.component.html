@@ -1,7 +1,8 @@
+
 <div class="container">
-  <!-- Check the user's role -->
-  <ng-container *ngIf="isAdmin$ | async; else studentView">
-    <!-- ADMIN VIEW: Show search form -->
+  <!-- Check if the view should be the Admin/Guest view or the Student view -->
+  <ng-container *ngIf="(isAdminView$ | async); else studentView">
+    <!-- ADMIN / GUEST VIEW -->
     <mat-card class="search-card">
       <mat-card-header>
         <mat-icon mat-card-avatar>history</mat-icon>
@@ -9,12 +10,18 @@
         <mat-card-subtitle>Enter a registration number to view all their past records.</mat-card-subtitle>
       </mat-card-header>
       <mat-card-content>
+        <!-- The form is now disabled for guests -->
         <form [formGroup]="searchForm" (ngSubmit)="fetchStudentDetails()" class="search-form">
-          <mat-form-field appearance="outline">
+          <mat-form-field appearance="outline"
+            matTooltip="Search is disabled for guest accounts."
+            [matTooltipDisabled]="!(isGuest$ | async)">
             <mat-label>Registration Number</mat-label>
             <input matInput formControlName="reg" required>
           </mat-form-field>
-          <button mat-raised-button color="primary" type="submit" [disabled]="searchForm.invalid || isLoading">
+
+          <button mat-raised-button color="primary" type="submit" [disabled]="searchForm.invalid || isLoading || (isGuest$ | async)"
+            matTooltip="Search is disabled for guest accounts."
+            [matTooltipDisabled]="!(isGuest$ | async)">
             <span *ngIf="!isLoading">Fetch History</span>
             <mat-progress-spinner *ngIf="isLoading" mode="indeterminate" diameter="24"></mat-progress-spinner>
           </button>
@@ -23,20 +30,19 @@
     </mat-card>
   </ng-container>
 
-  <!-- STUDENT VIEW: Show history directly -->
+  <!-- STUDENT VIEW -->
   <ng-template #studentView>
-    <div class="header-container">
-        <mat-icon>receipt_long</mat-icon>
-        <h2>My Attendance History</h2>
-    </div>
+    <mat-card>
+      <mat-card-header>
+        <mat-icon mat-card-avatar>person</mat-icon>
+        <mat-card-title>My Attendance History</mat-card-title>
+        <mat-card-subtitle>A complete log of all your recorded meals.</mat-card-subtitle>
+      </mat-card-header>
+    </mat-card>
   </ng-template>
 
-  <!-- COMMON RESULTS AREA (for both admin and student) -->
-  <div *ngIf="isLoading" class="spinner-container">
-    <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
-  </div>
-
-  <div *ngIf="!isLoading && (searched || !(isAdmin$ | async))" class="results-container">
+  <!-- Results Table (visible to all roles after data is loaded) -->
+  <div *ngIf="!isLoading && (searched || (isStudentView$ | async))" class="results-container">
     <div *ngIf="dataSource.data.length > 0; else noResults">
       <div class="table-container mat-elevation-z8">
         <table mat-table [dataSource]="dataSource" matSort>
@@ -45,6 +51,7 @@
             <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
             <td mat-cell *matCellDef="let row">{{ row.date }}</td>
           </ng-container>
+          <!-- Other columns... -->
           <ng-container matColumnDef="breakfast">
             <th mat-header-cell *matHeaderCellDef>Breakfast</th>
             <td mat-cell *matCellDef="let row">{{ row.breakfast ? 'Yes' : 'No' }}</td>

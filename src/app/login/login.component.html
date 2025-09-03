@@ -1,32 +1,57 @@
+
 <div class="login-container">
+  <!-- Animated background -->
+  <div class="shape-blob"></div>
+  <div class="shape-blob one"></div>
+  <div class="shape-blob two"></div>
+
   <mat-card class="login-card">
-    <mat-card-title>
+    <mat-card-header>
+      <mat-card-title>
       <mat-icon>login</mat-icon>
       <span>Login</span>
     </mat-card-title>
+    </mat-card-header>
+
     <mat-card-content>
-      <form (ngSubmit)="onLogin()">
-        <!-- Username Field -->
+      <!-- Main Login Form -->
+      <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
         <mat-form-field appearance="outline">
           <mat-label>Username / Registration No.</mat-label>
-          <input matInput [(ngModel)]="username" name="username" required>
+          <input matInput formControlName="username" required>
         </mat-form-field>
 
-        <!-- Password Field -->
         <mat-form-field appearance="outline">
           <mat-label>Password</mat-label>
-          <input matInput type="password" [(ngModel)]="password" name="password" required>
+          <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password" required>
+          <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" type="button" aria-label="Toggle password visibility">
+            <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+          </button>
         </mat-form-field>
 
-        <!-- Error Message Display -->
-        <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
-
-        <!-- Login Button with Loading Spinner -->
-        <button mat-flat-button color="primary" class="login-button" type="submit" [disabled]="isLoading">
+        <button mat-flat-button color="primary" class="login-button" type="submit" [disabled]="loginForm.invalid || isLoading">
           <span *ngIf="!isLoading">Login</span>
-          <mat-progress-spinner *ngIf="isLoading" mode="indeterminate" diameter="24"></mat-progress-spinner>
+          <mat-progress-spinner *ngIf="isLoading && !loginForm.invalid" mode="indeterminate" diameter="24"></mat-progress-spinner>
         </button>
       </form>
+
+      <!-- Divider -->
+      <div class="divider">
+        <span>Or</span>
+      </div>
+
+      <!-- --- NEW GUEST LOGIN BUTTON --- -->
+      <button mat-stroked-button class="guest-login-button" (click)="loginAsGuest()" [disabled]="isLoading">
+        <span *ngIf="!isLoading">View as Guest</span>
+        <mat-progress-spinner *ngIf="isLoading" mode="indeterminate" diameter="24"></mat-progress-spinner>
+      </button>
+      
     </mat-card-content>
   </mat-card>
+
+   <!-- General Error Message Area -->
+   <div *ngIf="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </div>
 </div>
+

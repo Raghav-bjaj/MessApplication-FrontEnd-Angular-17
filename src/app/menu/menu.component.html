@@ -1,7 +1,7 @@
+
 <div class="container">
-  <!-- Check the user's role -->
-  <ng-container *ngIf="isAdmin$ | async; else studentView">
-    <!-- ADMIN VIEW: Full Weekly Menu -->
+  <!-- Show the Admin/Weekly View -->
+  <ng-container *ngIf="viewType === 'weekly' && (fullMenu$ | async) as fullMenu">
     <div class="header-container">
       <mat-icon>restaurant_menu</mat-icon>
       <h2>Full Weekly Menu</h2>
@@ -12,39 +12,24 @@
           <mat-card-title>{{ dayMenu.day }}</mat-card-title>
         </mat-card-header>
         <mat-card-content>
-          <!-- Use an accordion to hold the expansion panels -->
           <mat-accordion>
-            <!-- Breakfast Panel -->
             <mat-expansion-panel>
               <mat-expansion-panel-header>
-                <mat-panel-title>Breakfast: <strong>{{ dayMenu.breakfast.name }}</strong></mat-panel-title>
+                <mat-panel-title>Breakfast: {{ dayMenu.breakfast.name }}</mat-panel-title>
               </mat-expansion-panel-header>
-              <h4 class="side-dishes-title">Side Dishes</h4>
-              <p class="side-dishes-content">{{ dayMenu.breakfast.description }}</p>
+              <p class="side-dishes">{{ dayMenu.breakfast.description }}</p>
             </mat-expansion-panel>
-            <!-- Lunch Panel -->
             <mat-expansion-panel>
               <mat-expansion-panel-header>
-                <mat-panel-title>Lunch: <strong>{{ dayMenu.lunch.name }}</strong></mat-panel-title>
+                <mat-panel-title>Lunch: {{ dayMenu.lunch.name }}</mat-panel-title>
               </mat-expansion-panel-header>
-              <h4 class="side-dishes-title">Side Dishes</h4>
-              <p class="side-dishes-content">{{ dayMenu.lunch.description }}</p>
+              <p class="side-dishes">{{ dayMenu.lunch.description }}</p>
             </mat-expansion-panel>
-            <!-- Dinner Panel -->
             <mat-expansion-panel>
               <mat-expansion-panel-header>
-                <mat-panel-title>Dinner: <strong>{{ dayMenu.dinner.name }}</strong></mat-panel-title>
+                <mat-panel-title>Dinner: {{ dayMenu.dinner.name }}</mat-panel-title>
               </mat-expansion-panel-header>
-              <h4 class="side-dishes-title">Side Dishes</h4>
-              <p class="side-dishes-content">{{ dayMenu.dinner.description }}</p>
-            </mat-expansion-panel>
-             <!-- Snacks Panel -->
-            <mat-expansion-panel *ngIf="dayMenu.snacks">
-              <mat-expansion-panel-header>
-                <mat-panel-title>Snacks: <strong>{{ dayMenu.snacks.name }}</strong></mat-panel-title>
-              </mat-expansion-panel-header>
-              <h4 class="side-dishes-title">Side Dishes</h4>
-              <p class="side-dishes-content">{{ dayMenu.snacks.description }}</p>
+              <p class="side-dishes">{{ dayMenu.dinner.description }}</p>
             </mat-expansion-panel>
           </mat-accordion>
         </mat-card-content>
@@ -52,23 +37,21 @@
     </div>
   </ng-container>
 
-  <!-- STUDENT VIEW: Upcoming Meals -->
-  <ng-template #studentView>
+  <!-- Show the Student/Upcoming View -->
+  <ng-container *ngIf="viewType === 'upcoming' && (upcomingMeals$ | async) as upcomingMeals">
     <div class="header-container">
       <mat-icon>update</mat-icon>
       <h2>Upcoming Meals</h2>
     </div>
     <div class="student-menu-grid">
-      <!-- Use an accordion for the student view as well -->
       <mat-accordion>
         <mat-expansion-panel *ngFor="let item of upcomingMeals" class="upcoming-panel">
           <mat-expansion-panel-header>
-            <mat-panel-title>{{ item.mealType }}: <strong>{{ item.meal.name }}</strong></mat-panel-title>
+            <mat-panel-title>{{ item.mealType }}: {{ item.meal.name }}</mat-panel-title>
           </mat-expansion-panel-header>
-          <h4 class="side-dishes-title">Side Dishes</h4>
-          <p class="side-dishes-content">{{ item.meal.description }}</p>
+          <p class="side-dishes">{{ item.meal.description }}</p>
         </mat-expansion-panel>
       </mat-accordion>
     </div>
-  </ng-template>
+  </ng-container>
 </div>

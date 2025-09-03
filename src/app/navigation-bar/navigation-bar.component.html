@@ -1,45 +1,44 @@
-<mat-toolbar *ngIf="authService.isLoggedIn$ | async">
-  
 
-  <!-- Role/User Identifier -->
-  <div class="user-identifier" *ngIf="authService.isAdmin$ | async; else studentIdentifier">
-    <mat-icon>admin_panel_settings</mat-icon>
-    <span>Admin Dashboard</span>
-  </div>
-  <ng-template #studentIdentifier>
-    <div class="user-identifier" *ngIf="currentUserRegNo$ | async as regNo">
-      <mat-icon>account_circle</mat-icon>
-      <span>{{ regNo }}</span>
-    </div>
-  </ng-template>
-
+<mat-toolbar color="primary" *ngIf="authService.isLoggedIn$ | async">
+  <span>Mess Management</span>
   <span class="toolbar-spacer"></span>
 
-  <!-- ADMIN NAVIGATION -->
-  <ng-container *ngIf="authService.isAdmin$ | async; else studentNav">
-    <a mat-button routerLink="/getStudents">Student List</a>
-    <a mat-button routerLink="/students/dues">Dues Report</a>
-    <button mat-button [matMenuTriggerFor]="adminMenu">More Actions</button>
-    <mat-menu #adminMenu="matMenu">
-      <button mat-menu-item routerLink="/menu">Weekly Menu</button>
-      <button mat-menu-item routerLink="/students/detail">Student History</button>
-      <button mat-menu-item routerLink="/students/add/new">Add Attendance</button>
-      <button mat-menu-item routerLink="/students/update">Update Attendance</button>
-      <button mat-menu-item routerLink="/students/delete">Delete Attendance</button>
-      <button mat-menu-item routerLink="/students/total">Student Total Lookup</button>
-    </mat-menu>
+  <!-- Use ng-container to check the user's role -->
+  <ng-container *ngIf="authService.userRole$ | async as role">
+
+    <!-- ADMIN NAVIGATION -->
+    <ng-container *ngIf="role === 'admin'">
+      <a mat-button routerLink="/getStudents">Student List</a>
+      <a mat-button routerLink="/students/dues">Dues Report</a>
+      <button mat-button [matMenuTriggerFor]="adminMenu">More Actions</button>
+      <mat-menu #adminMenu="matMenu">
+        <button mat-menu-item routerLink="/menu/weekly">Weekly Menu</button>
+        <button mat-menu-item routerLink="/students/detail">Student History</button>
+        <button mat-menu-item routerLink="/students/add/new">Add Attendance</button>
+        <button mat-menu-item routerLink="/students/update">Update Attendance</button>
+        <button mat-menu-item routerLink="/students/delete">Delete Attendance</button>
+        <button mat-menu-item routerLink="/students/total">Student Total Lookup</button>
+      </mat-menu>
+    </ng-container>
+
+    <!-- STUDENT NAVIGATION -->
+    <ng-container *ngIf="role === 'student'">
+      <a mat-button routerLink="/menu/upcoming">Today's Menu</a>
+      <a mat-button routerLink="/students/detail">My History</a>
+      <a mat-button routerLink="/students/total">My Total</a>
+    </ng-container>
+
+    <!-- --- THIS IS THE NEW GUEST NAVIGATION --- -->
+    <ng-container *ngIf="role === 'guest'">
+      <a mat-button routerLink="/features">Features Showcase</a>
+    </ng-container>
+
   </ng-container>
 
-  <!-- STUDENT NAVIGATION -->
-  <ng-template #studentNav>
-    <a mat-button routerLink="/menu">Today's Menu</a>
-    <a mat-button routerLink="/students/detail">My History</a>
-    <a mat-button routerLink="/students/total">My Total</a>
-  </ng-template>
-
-  <!-- Logout Button -->
+  <!-- Logout Button (visible to all logged-in users) -->
   <span class="auth-spacer"></span>
   <button mat-flat-button color="accent" (click)="authService.logout()">
     Logout
   </button>
 </mat-toolbar>
+
