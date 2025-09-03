@@ -1,8 +1,10 @@
-
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { StudentService, Student } from '../student.service';
+import { AuthService } from '../auth.service'; // <-- Import AuthService
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { take } from 'rxjs/operators';
 
 // Import all necessary Angular Material modules
 import { MatCardModule } from '@angular/material/card';
@@ -19,17 +21,9 @@ import { MatIconModule } from '@angular/material/icon';
   selector: 'app-update-student',
   standalone: true,
   imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
-    MatCheckboxModule,
-    MatButtonModule,
-    MatProgressSpinnerModule,
-    MatIconModule
+    CommonModule, ReactiveFormsModule, MatCardModule, MatFormFieldModule,
+    MatInputModule, MatDatepickerModule, MatNativeDateModule, MatCheckboxModule,
+    MatButtonModule, MatProgressSpinnerModule, MatIconModule
   ],
   templateUrl: './update-student.component.html',
   styleUrls: ['./update-student.component.css']
@@ -41,21 +35,22 @@ export class UpdateStudentComponent implements OnInit {
   responseMessage: string = '';
   isError = false;
   isLoading = false;
-  studentData: Student | null = null; // To hold the fetched student record
+  studentData: Student | null = null;
+  isGuest = false; // Property to track guest status
 
   constructor(
     private fb: FormBuilder,
-    private studentService: StudentService
+    private studentService: StudentService,
+    private snackBar: MatSnackBar,
+    private authService: AuthService // <-- Inject AuthService
   ) {
-    // Form for searching for a student record
     this.searchForm = this.fb.group({
       reg: ['', Validators.required],
       date: [new Date(), Validators.required]
     });
 
-    // Form for updating the student record (initially disabled)
     this.studentForm = this.fb.group({
-      reg: [{ value: '', disabled: true }], // Reg and date are non-editable
+      reg: [{ value: '', disabled: true }],
       date: [{ value: '', disabled: true }],
       breakfast: [false],
       lunch: [false],
@@ -63,14 +58,20 @@ export class UpdateStudentComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {}
-
-  // Helper to format date to "YYYY-MM-DD"
-  private formatDate(date: Date): string {
-    return date.toISOString().split('T')[0];
+  ngOnInit(): void {
+    // Check the user's role when the component initializes
+    this.authService.userRole$.pipe(take(1)).subscribe(role => {
+      this.isGuest = role === 'guest';
+    });
   }
 
-  // Step 1: Search for the student record
+  private formatDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
   searchStudent(): void {
     if (this.searchForm.invalid) { return; }
 
@@ -78,19 +79,14 @@ export class UpdateStudentComponent implements OnInit {
     this.studentData = null;
     this.responseMessage = '';
     this.isError = false;
-
     const reg = this.searchForm.value.reg;
     const date = this.formatDate(this.searchForm.value.date);
 
-    // We use the `students` method which should return a list.
-    // We expect a list with one item if the record is found.
     this.studentService.students(reg).subscribe({
       next: (students) => {
-        // Find the specific record for the chosen date from the results
         const record = students.find(s => s.date === date);
         if (record) {
           this.studentData = record;
-          // Populate the update form with the fetched data
           this.studentForm.patchValue({
             reg: record.reg,
             date: record.date,
@@ -113,34 +109,43 @@ export class UpdateStudentComponent implements OnInit {
     });
   }
 
-  // Step 2: Update the student record
   updateStudent(): void {
+    // --- THIS IS THE NEW GUEST CHECK ---
+    if (this.isGuest) {
+      this.snackBar.open('You are a guest and not authorised for this action.', 'Close', {
+        duration: 3000,
+        panelClass: ['error-snackbar']
+      });
+      return; // Stop the function here
+    }
+    // ------------------------------------
+
     if (this.studentForm.invalid || !this.studentData) { return; }
 
     this.isLoading = true;
     this.responseMessage = '';
     this.isError = false;
-
-    // Construct the payload with the updated values
     const updatedRecord: Student = {
-      ...this.studentData, // Start with existing data (like auid)
-      ...this.studentForm.value // Override with form values
+      ...this.studentData,
+      ...this.studentForm.value
     };
 
     this.studentService.updateStudents(updatedRecord).subscribe({
       next: (response) => {
         this.responseMessage = response;
         this.isLoading = false;
-        // Reset to the search state after a successful update
         this.studentData = null; 
         this.searchForm.reset({ date: new Date() });
+        this.snackBar.open('Record updated successfully!', 'Close', { duration: 3000, panelClass: 'success-snackbar' });
       },
       error: (err) => {
         this.responseMessage = 'Failed to update record.';
         this.isError = true;
         this.isLoading = false;
         console.error(err);
+        this.snackBar.open('Failed to update record.', 'Close', { duration: 3000, panelClass: 'error-snackbar' });
       }
     });
   }
 }
+

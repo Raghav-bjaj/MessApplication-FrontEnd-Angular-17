@@ -1,48 +1,58 @@
-<div class="total-container">
-  <!-- Check the user's role -->
-  <ng-container *ngIf="isAdmin$ | async; else studentView">
-    <!-- ADMIN VIEW: Show the lookup form -->
+
+<div class="container">
+  <!-- Check if the view should be the Admin/Guest view or the Student view -->
+  <ng-container *ngIf="(isAdminView$ | async); else studentView">
+    <!-- ADMIN / GUEST VIEW -->
     <mat-card class="total-card">
       <mat-card-header>
-        <mat-icon mat-card-avatar>manage_search</mat-icon>
-        <mat-card-title>Find Student Total</mat-card-title>
-        <mat-card-subtitle>Enter a registration number to look up a student's bill.</mat-card-subtitle>
+        <mat-icon mat-card-avatar>search</mat-icon>
+        <mat-card-title>Student Total Lookup</mat-card-title>
+        <mat-card-subtitle>Enter a registration number to find their total bill.</mat-card-subtitle>
       </mat-card-header>
       <mat-card-content>
-        <form [formGroup]="adminForm" (ngSubmit)="fetchAdminTotal()">
-          <mat-form-field appearance="outline">
+        <!-- The form is disabled for guests -->
+        <form [formGroup]="adminForm" (ngSubmit)="fetchTotal()" class="total-form">
+          <mat-form-field appearance="outline"
+            matTooltip="Search is disabled for guest accounts."
+            [matTooltipDisabled]="!(isGuest$ | async)">
             <mat-label>Registration Number</mat-label>
-            <input type="text" matInput formControlName="reg" required>
+            <input matInput formControlName="reg" required>
           </mat-form-field>
-          <button mat-flat-button color="primary" type="submit">Fetch Total</button>
+
+          <button mat-flat-button color="primary" type="submit" [disabled]="adminForm.invalid || (isGuest$ | async)"
+            matTooltip="Search is disabled for guest accounts."
+            [matTooltipDisabled]="!(isGuest$ | async)">
+            Fetch Total
+          </button>
         </form>
-        <!-- Display the admin's lookup result -->
-        <div *ngIf="responseMessage" class="response-message">
-          <p>{{ responseMessage }}</p>
-          <p *ngIf="adminTotal !== undefined" class="total-amount">₹ {{ adminTotal }}</p>
+
+        <!-- Display the fetched total for admin/guest -->
+        <div *ngIf="responseMessage" class="response-container">
+          <h3>{{ responseMessage }}</h3>
+          <p class="total-amount" *ngIf="adminTotal !== undefined">₹{{ adminTotal }}</p>
         </div>
       </mat-card-content>
     </mat-card>
   </ng-container>
 
-  <!-- STUDENT VIEW: This is shown if the user is not an admin -->
+  <!-- STUDENT VIEW -->
   <ng-template #studentView>
-    <ng-container *ngIf="{ total: (studentTotal$ | async), regNo: (regNo$ | async) } as data; else loading">
-      <mat-card class="total-card">
+    <ng-container *ngIf="{ total: (studentTotal$ | async), regNo: (regNo$ | async) } as data">
+      <mat-card class="total-card student-card">
         <mat-card-header>
-          <mat-icon mat-card-avatar>receipt</mat-icon>
+          <mat-icon mat-card-avatar>receipt_long</mat-icon>
           <mat-card-title>My Meal Bill</mat-card-title>
           <mat-card-subtitle>Reg No: {{ data.regNo }}</mat-card-subtitle>
         </mat-card-header>
         <mat-card-content>
-          <p class="total-amount">₹ {{ data.total }}</p>
+          <div class="student-total-display">
+            <p *ngIf="data.total !== null; else loading">₹{{ data.total }}</p>
+            <ng-template #loading>
+              <mat-progress-spinner mode="indeterminate" diameter="50"></mat-progress-spinner>
+            </ng-template>
+          </div>
         </mat-card-content>
       </mat-card>
     </ng-container>
-  </ng-template>
-
-  <!-- Loading spinner for the student view -->
-  <ng-template #loading>
-    <mat-spinner diameter="50"></mat-spinner>
   </ng-template>
 </div>

@@ -1,78 +1,68 @@
-/* A clean, light grey background with new position properties */
+
+/* Main container to center the login form on the page */
 .login-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  background-color: #eef2f7; /* A slightly cooler, more professional background */
-  position: relative; /* Needed for positioning the animated shapes */
-  overflow: hidden; /* Prevents shapes from showing scrollbars */
+  min-height: 100vh;
+  background-color: #f4f7fc;
+  padding: 20px;
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
 }
 
-/* Create two pseudo-elements to act as our moving shapes */
+/* Background shape animations */
 .login-container::before,
 .login-container::after {
   content: '';
   position: absolute;
-  background: rgba(103, 58, 183, 0.06); /* Very transparent theme color */
+  background: rgba(103, 58, 183, 0.06);
   border-radius: 50%;
-  z-index: 1; /* Place them behind the login card */
+  z-index: 1;
   animation: moveShapes 25s infinite alternate;
 }
-
-/* Position and size the first shape */
 .login-container::before {
   width: 500px;
   height: 500px;
   bottom: -250px;
   left: -250px;
 }
-
-/* Position, size, and delay the second shape for a parallax effect */
 .login-container::after {
   width: 300px;
   height: 300px;
   top: -150px;
   right: -150px;
-  animation-delay: -12s; /* Start the animation at a different point */
+  animation-delay: -12s;
 }
-
-/* Define the movement animation for the background shapes */
 @keyframes moveShapes {
-  from {
-    transform: translate(0, 0) rotate(0deg);
-  }
-  to {
-    transform: translate(100px, 50px) rotate(45deg);
-  }
+  from { transform: translate(0, 0) rotate(0deg); }
+  to { transform: translate(100px, 50px) rotate(45deg); }
 }
 
-
-/* A standard Material card with a subtle animation */
+/* Main login card */
 .login-card {
   width: 100%;
   max-width: 400px;
-  padding: 30px 40px;
+  padding: 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   border-radius: 12px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08); /* Softer shadow */
-  animation: fadeInSlideUp 0.6s ease-out forwards;
-  z-index: 2; /* Ensure the card is on top of the shapes */
-  background-color: #fff; /* Solid white background */
+  border: 1px solid #e0e0e0;
+  background-color: white;
+  z-index: 2;
 }
 
-/* Define the animation */
-@keyframes fadeInSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(15px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Header section with icon and title */
+mat-card-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eee;
 }
 
-/* Style the title to be clean and clear */
+/* --- FIX #2: Increased Spacing --- */
 mat-card-title {
   display: flex;
   align-items: center;
@@ -84,22 +74,62 @@ mat-card-title {
   color: #333; /* Dark grey text for readability */
 }
 
-form {
+
+/* Form fields container */
+mat-card-content {
   display: flex;
   flex-direction: column;
+  gap: 15px;
 }
 
-/* Make the button full-width and use the primary theme color */
+mat-form-field {
+  width: 100%;
+}
+
+/* Common styles for BOTH login and guest buttons */
+.login-button, .guest-login-button {
+  width: 100%;
+  padding: 12px 0 !important;
+  font-size: 1rem !important;
+}
+
 .login-button {
-  margin-top: 15px;
-  padding: 12px 0;
-  font-size: 1rem;
-  border-radius: 8px;
+  margin-top: 10px;
 }
 
-.error-message {
-  color: #f44336; /* Material Design 'warn' color */
+/* We style the guest button to look exactly like a mat-flat-button with color="primary" */
+.guest-login-button {
+  background-color: #3f51b5; /* Standard Material Indigo */
+  color: white !important; /* Use !important to override default text color */
+  border: none;
+}
+
+
+/* Divider for the "Or" text */
+.divider {
+  display: flex;
+  align-items: center;
   text-align: center;
-  margin-top: 10px;
-  font-weight: 500;
+  color: #010101;
+  margin: 25px 0;
+}
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #eee;
+}
+.divider:not(:empty)::before {
+  margin-right: .25em;
+}
+.divider:not(:empty)::after {
+  margin-left: .25em;
+}
+
+/* Spinner styling for loading state */
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
 }
